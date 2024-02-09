@@ -51,15 +51,15 @@ const Answers = ({ data }: { data: Awaited<ReturnType<typeof action>> }) => {
       
   components.push(
     <Card key={cid}>        
-      <Title2 as="h2" block={true} style={{ marginBottom: "3px", marginTop:"0px" }}>Your question</Title2>
+      <Title2 as="h2" block={true} style={{ marginBottom: "0em", marginTop:"0px" }}>Your question</Title2>
       <FancyText>
         {question.question}
       </FancyText>
-      <Title2 as="h2" block={true} style={{ marginBottom: "3px" }}>My answer</Title2>
+      <Title2 as="h2" block={true} style={{ marginBottom: "0em" }}>My answer</Title2>
       <FancyText>
         <ReactMarkdown>{answer.answer}</ReactMarkdown>
       </FancyText>
-      <Title2 as="h2" block={true} style={{ marginBottom: "3px" }}>My thoughts</Title2>
+      <Title2 as="h2" block={true} style={{ marginBottom: "0em" }}>My thoughts</Title2>
       <FancyText>
         {answer.thoughts}
       </FancyText>

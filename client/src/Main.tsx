@@ -20,14 +20,14 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <SessionSearch />,
-        loader: sessionsListLoader,
+        element: <Chat />,        
+        action: chatAction,
       },
       {
         index: false,
-        element: <Chat />,
-        path: "/chat",
-        action: chatAction,
+        element: <SessionSearch />,
+        path: "/search",
+        loader: sessionsListLoader,
       },
       {
         index: false,

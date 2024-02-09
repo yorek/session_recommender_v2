@@ -9,19 +9,17 @@ export const Navigation = () => {
     <>
       <TabList
         onTabSelect={(_, data) => {
-          navigate(data.value === "search" ? "/" : `/${data.value}`);
+          navigate(data.value === "chat" ? "/" : `/${data.value}`);
         }}
         selectedValue={
-          window.location.pathname === "/"
-            ? "search"
-            : window.location.pathname.substring(1)
+          window.location.pathname === "/" ? "chat" : window.location.pathname.substring(1)
         }
       >
-        <Tab id="search" value="search" icon={<SearchRegular />}>
-          Search
-        </Tab>
         <Tab id="chat" value="chat" icon={<ChatRegular />}>
           Chat
+        </Tab>
+        <Tab id="search" value="search" icon={<SearchRegular />}>
+          Search
         </Tab>
         <Tab id="about" value="about" icon={<InfoRegular />}>
           About

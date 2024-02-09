@@ -3,7 +3,7 @@ import { makeStyles, shorthands } from "@fluentui/react-components";
 import { Header } from "../components/Header";
 import { Navigation } from "../components/Navigation";
 
-const margin = shorthands.margin("2rem", "3rem", "1rem");
+const margin = shorthands.margin("1rem", "3rem", "1rem");
 const useStyles = makeStyles({
   root: {
     display: "grid",

@@ -7,6 +7,7 @@ import {
   Text,
   makeStyles,
   CardFooter,
+  Spinner,
   Title2
 } from "@fluentui/react-components";
 import { SendRegular } from "@fluentui/react-icons";
@@ -16,6 +17,8 @@ import { ask } from "../api/chat";
 import { FancyText } from "../components/FancyText";
 import { PrimaryButton } from "../components/PrimaryButton";
 import ReactMarkdown from "react-markdown";
+
+var thinking = false
 
 const useClasses = makeStyles({
   container: {},
@@ -32,6 +35,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   const data = await ask(prompt.toString());
+  thinking = false
   return data;
 }
 
@@ -83,10 +87,10 @@ export const Chat = () => {
     }
 
     if (e.key === "Enter" && !e.shiftKey) {
+      thinking = true      
       const formData = new FormData();
       formData.append("prompt", prompt);
-      fetcher.submit(formData, { method: "POST" });
-      setPrompt(() => "");
+      fetcher.submit(formData, { method: "POST" });      
     }
   };
 
@@ -117,10 +121,11 @@ export const Chat = () => {
           >
             Submit
           </PrimaryButton>
+          {thinking && <Spinner label="Thinking..." />}
         </fetcher.Form>
       </div>
       <div className={classes.answersArea}>
-        {data && <Answers data={data} />}
+        {!thinking && data && <Answers data={data} />}
       </div>
     </div>
   );

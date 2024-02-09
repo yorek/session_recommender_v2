@@ -21,7 +21,7 @@ param appUserPassword string
 param sqlAdminPassword string
 param dbServiceName string = ''
 param keyVaultName string = ''
-param dbName string = 'sqldb'
+param dbName string = 'session_recommender_v2'
 param storageAccountName string = ''
 param functionAppName string = ''
 param applicationInsightsName string = ''

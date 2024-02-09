@@ -113,12 +113,12 @@ export default function SessionSearch() {
 export function formatSubtitle(session: SessionInfo) {
   var speakers = JSON.parse(session.speakers).join(", ");
 
-  var startTime = dayjs(session.start_time_PST);
-  var endTime = dayjs(session.end_time_PST);
+  // var startTime = dayjs(session.start_time_PST);
+  // var endTime = dayjs(session.end_time_PST);
 
-  var day = startTime.date();
-  var start = startTime.format("hh:mm A");
-  var end = endTime.format("hh:mm A");
+  // var day = startTime.date();
+  // var start = startTime.format("hh:mm A");
+  // var end = endTime.format("hh:mm A");
 
   return `${speakers} | Similarity: ${session.cosine_similarity.toFixed(6)}`;
 }

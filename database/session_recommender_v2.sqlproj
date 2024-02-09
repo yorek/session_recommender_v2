@@ -30,7 +30,8 @@
     </SqlCmdVariable>
     <SqlCmdVariable Include="OPEN_AI_KEY">
       <Value>$(SqlCmdVar__3)</Value>
-      <DefaultValue></DefaultValue>
+      <DefaultValue>
+      </DefaultValue>
     </SqlCmdVariable>
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +39,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="dmmssqlsrv9.publish.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Remove="SQLQuery_3.sql" />
   </ItemGroup>
   <Target Name="BeforeBuild">
     <Delete Files="$(BaseIntermediateOutputPath)\project.assets.json" />

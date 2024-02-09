@@ -8,7 +8,7 @@ using Azure.AI.OpenAI;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SessionRecommender.SessionProcessor;
+namespace SessionRecommender.RequestHandler;
 
 public class Item 
 {
@@ -140,13 +140,6 @@ public class SessionProcessor(OpenAIClient openAIClient, SqlConnection conn, ILo
                 logger.LogInformation($"[{referenceTable}:{change.Id}] Failed to get embeddings.");
             }
         }
-    }
-
-    [Function("KeepAlive")]
-    public void RunOnTimerTrigger([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer)
-    {
-        // Needed until SQL Trigger is GA.
-        logger.LogInformation("Keep Alive Signal");
     }
 }
 

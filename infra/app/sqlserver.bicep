@@ -109,63 +109,6 @@ SCRIPT_END
   }
 }
 
-resource createTableScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-  name: '${name}-creatTable-script'
-  location: location
-  kind: 'AzureCLI'
-  properties: {
-    azCliVersion: '2.37.0'
-    retentionInterval: 'PT1H' // Retain the script resource for 1 hour after it ends running
-    timeout: 'PT5M' // Five minutes
-    cleanupPreference: 'OnSuccess'
-    environmentVariables: [
-      {
-        name: 'APPUSERNAME'
-        value: appUser
-      }
-      {
-        name: 'APPUSERPASSWORD'
-        secureValue: appUserPassword
-      }
-      {
-        name: 'DBNAME'
-        value: databaseName
-      }
-      {
-        name: 'DBSERVER'
-        value: sqlServer.properties.fullyQualifiedDomainName
-      }
-      {
-        name: 'SQLCMDPASSWORD'
-        secureValue: sqlAdminPassword
-      }
-      {
-        name: 'SQLADMIN'
-        value: sqlAdmin
-      }
-      {
-        name: 'OpenAIUrl'
-        value: openAIEndpoint
-      }
-      {
-        name: 'OpenAIDeploymentName'
-        value: openAIDeploymentName
-      }
-      {
-        name: 'OpenAIKey'
-        value: listKeys(resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.CognitiveServices/accounts', openAIServiceName), '2023-05-01').key1
-      }
-
-    ]
-    scriptContent: '''
-      ./setup-database.sh
-    '''
-    supportingScriptUris: [
-      'https://raw.githubusercontent.com/Azure-Samples/azure-sql-db-session-recommender/main/database/setup-database.sh'
-    ]
-  }
-}
-
 var connectionString = 'Server=${sqlServer.properties.fullyQualifiedDomainName}; Database=${sqlServer::database.name}; User=${appUser}'
 output connectionStringKey string = connectionStringKey
 output connectionString string = connectionString

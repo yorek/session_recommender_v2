@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
+    <UserSecretsId>f9d76b6e-3000-45fa-8f99-dec6e7819a55</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>    
     <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.13" />    

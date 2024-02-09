@@ -25,13 +25,13 @@ module functionApp '../core/host/functions.bicep' = {
     keyVaultName: keyVaultName
     appServicePlanId: hostingPlanId
     name: functionAppName
-    runtimeName: 'dotnet'
-    runtimeVersion: 'v7.0'
+    runtimeName: 'dotnet-isolated'
+    runtimeVersion: 'v8.0'
     storageAccountName: storageAccountName
     appSettings: {
       WEBSITE_CONTENTSHARE: toLower(functionAppName)
       FUNCTIONS_EXTENSION_VERSION: '~4'
-      FUNCTIONS_WORKER_RUNTIME: 'dotnet'
+      FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
       WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Storage/storageAccounts', storageAccountName), '2022-05-01').keys[0].value}'
       APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsightsConnectionString
       AZURE_SQL_CONNECTION_STRING: sqlConnectionString

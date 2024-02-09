@@ -29,6 +29,8 @@ public record FoundSession(
 
 public class Asker(OpenAIClient openAIClient, SqlConnection conn, ILogger<Asker> logger)
 {
+    private readonly string _openAIDeploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_GPT_DEPLOYMENT_NAME") ?? "gpt-4";
+
     private const string SystemMessage = """
 You as a system assistant who helps users find the right session to watch from the conference, based off the sessions that are provided to you.
 
@@ -88,7 +90,7 @@ You answer needs to divided in two section: in the first you'll add the answer t
 then you'll add a second section the must be named exactly '###thoughts###' where you'll write brief thoughts on how you came up with the answer, e.g. what sources you used, what you thought about, etc.
 }}"));
 
-        ChatCompletionsOptions options = new("gpt-4-32k", messages);
+        ChatCompletionsOptions options = new(_openAIDeploymentName, messages);
 
         try
         {

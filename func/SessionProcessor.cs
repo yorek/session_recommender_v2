@@ -55,7 +55,7 @@ public class ChangedItem: Item
 
 public class SessionProcessor(OpenAIClient openAIClient, SqlConnection conn, ILogger<SessionProcessor> logger)
 {
-    private readonly string _openAIDeploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? "embeddings";
+    private readonly string _openAIDeploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME") ?? "embeddings";
 
     [Function(nameof(SessionTrigger))]
     public async Task SessionTrigger(

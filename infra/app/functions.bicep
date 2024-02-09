@@ -13,7 +13,8 @@ param applicationInsightsConnectionString string
 param useKeyVault bool
 param keyVaultEndpoint string = ''
 param openAIName string
-param openAIDeploymentName string = 'embeddings'
+param openAIEmebddingDeploymentName string = 'embeddings'
+param openAIGPTDeploymentName string = 'gpt-4'
 
 module functionApp '../core/host/functions.bicep' = {
   name: 'function1'
@@ -36,7 +37,8 @@ module functionApp '../core/host/functions.bicep' = {
       APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsightsConnectionString
       AZURE_SQL_CONNECTION_STRING: sqlConnectionString
       AZURE_OPENAI_ENDPOINT: openAIEndpoint
-      AZURE_OPENAI_DEPLOYMENT_NAME: openAIDeploymentName
+      AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME: openAIEmebddingDeploymentName
+      AZURE_OPENAI_GPT_DEPLOYMENT_NAME: openAIGPTDeploymentName
       AZURE_OPENAI_KEY: useKeyVault ? openAIKeyName : listKeys(resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.CognitiveServices/accounts', openAIName), '2023-05-01').key1
       AZURE_KEY_VAULT_ENDPOINT: useKeyVault ? keyVaultEndpoint : ''
     }

@@ -10,8 +10,7 @@ param location string
 param openAIServiceName string = ''
 param openAISkuName string = 'S0'
 param embeddingDeploymentName string = 'embeddings'
-param embeddingDeploymentCapacity int = 30
-param embeddingModelName string = 'text-embedding-ada-002'
+param gptDeploymentName string = 'gpt'
 @description('Id of the user or app to assign application roles')
 param principalId string
 @secure()
@@ -58,10 +57,18 @@ module openAI 'app/openai.bicep' = {
         name: embeddingDeploymentName
         model: {
           format: 'OpenAI'
-          name: embeddingModelName
-          version: '2'
+          name: 'text-embedding-ada-002'         
         }
-        capacity: embeddingDeploymentCapacity
+        capacity: 30
+      }
+      {
+        name: gptDeploymentName
+        model: {
+          format: 'OpenAI'
+          name: 'gpt-35-turbo'          
+          version: '0613'
+        }
+        capacity: 120
       }
     ]
     keyVaultName: keyVault.outputs.name
@@ -157,7 +164,8 @@ module functionApp 'app/functions.bicep' = {
     hostingPlanId: hostingPlan.outputs.id
     sqlConnectionString: '${database.outputs.connectionString}; Password=${appUserPassword}'
     openAIEndpoint: openAI.outputs.endpoint
-    openAIDeploymentName: embeddingDeploymentName
+    openAIEmebddingDeploymentName: embeddingDeploymentName
+    openAIGPTDeploymentName: gptDeploymentName
     keyVaultName: keyVault.outputs.name
     applicationInsightsConnectionString: applicationInsights.outputs.connectionString
     useKeyVault: useKeyVault

@@ -1,238 +1,152 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Microsoft.Azure.WebJobs.Extensions.Sql;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using Microsoft.Data.SqlClient;
 using System.Data;
-using System.Net;
 using Dapper;
-using System.Security.Cryptography;
-using System.Linq;
-using Microsoft.SqlServer.TransactSql.ScriptDom;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Extensions.Sql;
+using Azure.AI.OpenAI;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace SessionRecommender.SessionProcessor
+namespace SessionRecommender.SessionProcessor;
+
+public class Item 
 {
-    public class Item 
+    public required int Id { get; set; }
+
+    [JsonPropertyName("require_embeddings_update")]
+    public bool RequireEmbeddingsUpdate { get; set; }
+
+    public override bool Equals(object obj)
     {
-        public int Id { get; set; }
-
-        [JsonProperty("require_embeddings_update")]
-        public bool RequireEmbeddingsUpdate { get; set; }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is Item)
-            {
-                var that = obj as Item;
-                return Id == that.Id;
-            }
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return Id.ToString();
-        }
+        if (obj is not Item that) return false;         
+        return Id == that.Id;
     }
 
-    public class Session: Item
+    public override int GetHashCode()
     {
-        public string Title { get; set; }
-
-        public string Abstract { get; set; }       
-
-        public override bool Equals(object obj)
-        {
-            if (obj is Session)
-            {
-                var that = obj as Session;
-                return Id == that.Id && Title == that.Title && Abstract == that.Abstract;
-            }
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode() ^ Title.GetHashCode() ^ Abstract.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return Id.ToString();
-        }
+        return Id.GetHashCode();
     }
 
-    public class Speaker: Item
+    public override string ToString()
     {
-        [JsonProperty("full_name")]
-        public string FullName { get; set; }
-
-        public string Abstract { get; set; }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is Speaker)
-            {
-                var that = obj as Speaker;
-                return Id == that.Id && FullName == that.FullName;
-            }
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode() ^ FullName.GetHashCode() ^ Abstract.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return Id.ToString();
-        }
-    }
-
-    public class ChangedItem: Item 
-    {
-        public SqlChangeOperation Operation { get; set; }        
-        public string Payload { get; set; }
-    }
-
-
-    public static class SessionProcessor
-    {
-        private static readonly HttpClient httpClient;
-
-        static SessionProcessor()
-        {
-            var key = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY");
-            var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
-
-            httpClient = new HttpClient
-            {
-                BaseAddress = new Uri(endpoint)
-            };
-            httpClient.DefaultRequestHeaders.Add("api-key", key);
-        }
-
-        [FunctionName(nameof(SessionTrigger))]
-        public static async Task SessionTrigger(
-            [SqlTrigger("[web].[sessions]", "AZURE_SQL_CONNECTION_STRING")]
-            IReadOnlyList<SqlChange<Session>> changes,
-            ILogger logger)
-        {
-            logger.LogInformation("Detected: " + changes.Count + " changes on session table.");
-
-            var ci = from c in changes 
-                        where c.Operation != SqlChangeOperation.Delete 
-                        where c.Item.RequireEmbeddingsUpdate == true
-                        select new ChangedItem() { 
-                            Id = c.Item.Id, 
-                            Operation = c.Operation, 
-                            Payload = c.Item.Title + ':' + c.Item.Abstract 
-                        };
-
-            await ProcessChanges(ci, "web.sessions", "web.upsert_session_embeddings", logger);
-        }
-
-        [FunctionName(nameof(SpeakerTrigger))]
-        public static async Task SpeakerTrigger(
-            [SqlTrigger("[web].[speakers]", "AZURE_SQL_CONNECTION_STRING")]
-            IReadOnlyList<SqlChange<Speaker>> changes,
-            ILogger logger)
-        {
-            logger.LogInformation("Detected: " + changes.Count + " changes on speakers table.");
-                    
-            var ci = from c in changes 
-                        where c.Operation != SqlChangeOperation.Delete 
-                        where c.Item.RequireEmbeddingsUpdate == true
-                        select new ChangedItem() { 
-                            Id = c.Item.Id, 
-                            Operation = c.Operation, 
-                            Payload = c.Item.FullName 
-                        };
-
-            await ProcessChanges(ci, "web.speakers", "web.upsert_speaker_embeddings", logger);          
-        }
-
-        private static async Task ProcessChanges(IEnumerable<ChangedItem> changes, string referenceTable, string upsertStoredProcedure, ILogger logger)
-        {
-            logger.LogInformation($"Processing {changes.Count()} changes on table {referenceTable}.");
-
-            foreach (var change in changes)
-            {
-                logger.LogInformation($"[{referenceTable}:{change.Id}] Processing change for operation: " + change.Operation.ToString());
-
-                var attempts = 0;
-                var embeddingsReceived = false;
-                while (attempts < 3)
-                {
-                    attempts++;
-
-                    logger.LogInformation($"[{referenceTable}:{change.Id}] Attempt {attempts}/3 to get embeddings.");
-
-                    var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME");
-                    var requestUri = "/openai/deployments/" + deploymentName + "/embeddings?api-version=2023-03-15-preview";
-                    var response = await httpClient.PostAsJsonAsync(
-                        requestUri,
-                        new { input = change.Payload }
-                    );
-
-                    if (response.StatusCode == HttpStatusCode.TooManyRequests)
-                    {
-                        var waitFor = response.Headers.RetryAfter.Delta.Value.TotalSeconds;
-                        logger.LogInformation($"[{referenceTable}:{change.Id}] OpenAI had too many requests. Waiting {waitFor} seconds.");
-                        await Task.Delay(TimeSpan.FromSeconds(waitFor));
-                        continue;
-                    }
-
-                    response.EnsureSuccessStatusCode();
-
-                    var jd = await response.Content.ReadAsAsync<JObject>();
-                    var e = jd.SelectToken("data[0].embedding");
-                    if (e != null)
-                    {
-                        using var conn = new SqlConnection(Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTION_STRING"));
-                        await conn.ExecuteAsync(
-                            upsertStoredProcedure,
-                            commandType: CommandType.StoredProcedure,
-                            param: new
-                            {
-                                @id = change.Id,
-                                @embeddings = e.ToString()
-                            });
-                        embeddingsReceived = true;
-                        logger.LogInformation($"[{referenceTable}:{change.Id}] Done.");
-                    }
-                    else
-                    {
-                        logger.LogInformation($"[{referenceTable}:{change.Id}] No embeddings received.");
-                    }
-
-                    break;
-                }
-                if (!embeddingsReceived)
-                {
-                    logger.LogInformation($"[{referenceTable}:{change.Id}] Failed to get embeddings.");
-                }
-            }
-        }
-
-        [FunctionName("KeepAlive")]
-        public static void RunOnTimerTrigger(
-        [TimerTrigger("0 */1 * * * *")] TimerInfo myTimer,
-        ILogger logger)
-        {
-            // Needed until SQL Trigger is GA.
-            logger.LogInformation("Keep Alive Signal");
-        }
+        return Id.ToString();
     }
 }
+
+public class Session: Item
+{
+    public string? Title { get; set; }
+
+    public string? Abstract { get; set; }       
+}
+
+public class Speaker: Item
+{
+    [JsonPropertyName("full_name")]
+    public string? FullName { get; set; }
+}
+
+public class ChangedItem: Item 
+{
+    public SqlChangeOperation Operation { get; set; }        
+    public required string Payload { get; set; }
+}
+
+public class SessionProcessor(OpenAIClient openAIClient, SqlConnection conn, ILogger<SessionProcessor> logger)
+{
+    private readonly string _openAIDeploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? "embeddings";
+
+    [Function(nameof(SessionTrigger))]
+    public async Task SessionTrigger(
+        [SqlTrigger("[web].[sessions]", "AZURE_SQL_CONNECTION_STRING")]
+        IReadOnlyList<SqlChange<Session>> changes
+        )
+    {
+        var ci = from c in changes 
+                    where c.Operation != SqlChangeOperation.Delete 
+                    where c.Item.RequireEmbeddingsUpdate == true
+                    select new ChangedItem() { 
+                        Id = c.Item.Id, 
+                        Operation = c.Operation, 
+                        Payload = c.Item.Title + ':' + c.Item.Abstract                       
+                    };
+
+        await ProcessChanges(ci, "web.sessions", "web.upsert_session_embeddings", logger);
+    }
+
+    [Function(nameof(SpeakerTrigger))]
+    public async Task SpeakerTrigger(
+        [SqlTrigger("[web].[speakers]", "AZURE_SQL_CONNECTION_STRING")]
+        IReadOnlyList<SqlChange<Speaker>> changes        
+        )
+    {
+        var ci = from c in changes 
+                    where c.Operation != SqlChangeOperation.Delete 
+                    where c.Item.RequireEmbeddingsUpdate == true
+                    select new ChangedItem() { 
+                        Id = c.Item.Id, 
+                        Operation = c.Operation, 
+                        Payload = c.Item.FullName ?? "",
+                        RequireEmbeddingsUpdate = c.Item.RequireEmbeddingsUpdate
+                    };
+
+        await ProcessChanges(ci, "web.speakers", "web.upsert_speaker_embeddings", logger);          
+    }
+
+    private async Task ProcessChanges(IEnumerable<ChangedItem> changes, string referenceTable, string upsertStoredProcedure, ILogger logger)
+    {
+        var ct = changes.Count();
+        if (ct == 0) {
+            logger.LogInformation($"No useful changes detected on {referenceTable} table.");
+            return;
+        }
+
+        logger.LogInformation($"There are {ct} changes that requires processing on table {referenceTable}.");
+
+        foreach (var change in changes)
+        {
+            logger.LogInformation($"[{referenceTable}:{change.Id}] Processing change for operation: " + change.Operation.ToString());
+
+            var attempts = 0;
+            var embeddingsReceived = false;
+            while (attempts < 3)
+            {
+                attempts++;
+
+                logger.LogInformation($"[{referenceTable}:{change.Id}] Attempt {attempts}/3 to get embeddings.");
+
+                var response = await openAIClient.GetEmbeddingsAsync(
+                    new EmbeddingsOptions(_openAIDeploymentName, [change.Payload])
+                );
+
+                var e = response.Value.Data[0].Embedding;
+                await conn.ExecuteAsync(
+                    upsertStoredProcedure,
+                    commandType: CommandType.StoredProcedure,
+                    param: new
+                    {
+                        @id = change.Id,
+                        @embeddings = JsonSerializer.Serialize(e)
+                    });
+                embeddingsReceived = true;
+
+                logger.LogInformation($"[{referenceTable}:{change.Id}] Done.");                
+
+                break;
+            }
+            if (!embeddingsReceived)
+            {
+                logger.LogInformation($"[{referenceTable}:{change.Id}] Failed to get embeddings.");
+            }
+        }
+    }
+
+    [Function("KeepAlive")]
+    public void RunOnTimerTrigger([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer)
+    {
+        // Needed until SQL Trigger is GA.
+        logger.LogInformation("Keep Alive Signal");
+    }
+}
+

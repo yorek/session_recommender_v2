@@ -1,7 +1,9 @@
+import { Title1 } from "@fluentui/react-components";
+
 export const Header = () => {
   return (
-    <h1 className="font-title-2">
-      <a href="#">Conference </a> AI Assistant
-    </h1>
+    <Title1>
+      Conference AI Assistant
+    </Title1>
   );
 };

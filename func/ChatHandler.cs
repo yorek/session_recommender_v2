@@ -86,7 +86,7 @@ Sessions will be provided in an assistant message in the format of `title|abstra
 {sessionDescriptions}
 ## End ##
 
-You answer needs to divided in two sections: in the first section you'll add the answer to the question, also add a source reference to the end of each sentence. e.g. Apple is a fruit [reference1.pdf][reference2.pdf]. If no source available, put the answer as I don't know.
+You answer needs to divided in two sections: in the first section you'll add the answer to the question.
 In the second section, that must be named exactly '###thoughts###' (and make sure to use the section name as typed, without any changes) you'll write brief thoughts on how you came up with the answer, e.g. what sources you used, what you thought about, etc.
 }}"));
 
@@ -96,7 +96,9 @@ In the second section, that must be named exactly '###thoughts###' (and make sur
         {
             var answerPayload = await openAIClient.GetChatCompletionsAsync(options);
             var answerContent = answerPayload.Value.Choices[0].Message.Content;
-            logger.LogInformation(answerContent);            
+            
+            //logger.LogInformation(answerContent);            
+            
             var answerPieces = answerContent
                 .Replace("###Thoughts###", "###thoughts###", StringComparison.InvariantCultureIgnoreCase)
                 .Replace("### Thoughts ###", "###thoughts###", StringComparison.InvariantCultureIgnoreCase)

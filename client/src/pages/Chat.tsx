@@ -18,12 +18,10 @@ import { FancyText } from "../components/FancyText";
 import { PrimaryButton } from "../components/PrimaryButton";
 import ReactMarkdown from "react-markdown";
 
-var thinking = false
-
 const useClasses = makeStyles({
   container: {},
   chatArea: {},
-  answersArea: {marginTop: "1em"},
+  answersArea: {marginTop: "1em", boxShadow: "none"},
   textarea: { width: "100%", marginBottom: "1rem" },
 });
 
@@ -35,7 +33,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   const data = await ask(prompt.toString());
-  thinking = false
   return data;
 }
 
@@ -74,7 +71,7 @@ export const Chat = () => {
   const classes = useClasses();
 
   const submitting = fetcher.state !== "idle";
-  const data = fetcher.data;
+  const data = fetcher.data;  
 
   const [prompt, setPrompt] = useState("");
 
@@ -87,7 +84,6 @@ export const Chat = () => {
     }
 
     if (e.key === "Enter" && !e.shiftKey) {
-      thinking = true      
       const formData = new FormData();
       formData.append("prompt", prompt);
       fetcher.submit(formData, { method: "POST" });      
@@ -98,7 +94,11 @@ export const Chat = () => {
     <div className={classes.container}>
       <div>
         <FancyText>
-          Start a conversation and we'll recommend sessions for you to watch.
+          <>
+          Ask questions to the AI model in natural language and get meaningful answers to help you navigate the conferences sessions and find the best ones for you. 
+          The AI model is using GPT-4 Turbo and is trained on the latest data from the conference. Thanks to <a href="https://en.wikipedia.org/wiki/Prompt_engineering">Prompt Engineering</a> and <a href="https://learn.microsoft.com/en-us/azure/search/retrieval-augmented-generation-overview">Retrieval Augmented Generation (RAG) </a> finding
+          details and recommendations on what session to attend is easier than ever.
+          </>
         </FancyText>        
       </div>
       <div className={classes.chatArea}>
@@ -121,11 +121,11 @@ export const Chat = () => {
           >
             Submit
           </PrimaryButton>
-          {thinking && <Spinner label="Thinking..." />}
+          {submitting && <Spinner label="Thinking..." />}
         </fetcher.Form>
       </div>
       <div className={classes.answersArea}>
-        {!thinking && data && <Answers data={data} />}
+        {!submitting && data && <Answers data={data} />}
       </div>
     </div>
   );

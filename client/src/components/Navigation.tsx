@@ -16,7 +16,7 @@ export const Navigation = () => {
         }
       >
         <Tab id="chat" value="chat" icon={<ChatRegular />}>
-          Chat
+          Ask
         </Tab>
         <Tab id="search" value="search" icon={<SearchRegular />}>
           Search

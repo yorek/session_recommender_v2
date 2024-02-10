@@ -95,11 +95,11 @@ export const Chat = () => {
       <div>
         <FancyText>
           <>
-          Ask questions to the AI model in natural language and get meaningful answers to help you navigate the conferences sessions and find the best ones for you. 
-          The AI model is using GPT-4 Turbo and is trained on the latest data from the conference. Thanks to <a href="https://en.wikipedia.org/wiki/Prompt_engineering">Prompt Engineering</a> and <a href="https://learn.microsoft.com/en-us/azure/search/retrieval-augmented-generation-overview">Retrieval Augmented Generation (RAG) </a> finding
-          details and recommendations on what session to attend is easier than ever.
-
-          Please note that the AI model will remember your questions and answers to improve the quality of the answers and get more context on your requests. If you want to start from scratch, please refresh the page.
+          Ask questions to the AI model in natural language and get meaningful answers 
+          to help you navigate the conferences sessions and find the best ones for you.           
+          Thanks to <a href="https://en.wikipedia.org/wiki/Prompt_engineering" target="_blank">Prompt Engineering</a> and <a href="https://learn.microsoft.com/en-us/azure/search/retrieval-augmented-generation-overview" target="_blank">Retrieval Augmented Generation (RAG) </a> finding
+          details and recommendations on what session to attend is easier than ever. Please note that the AI model will remember your questions and answers to improve the quality of the answers and get more context on your requests.           
+          If you want to start from scratch, <a href="/">click here</a> or refresh the page.
           </>
         </FancyText>        
       </div>
@@ -109,7 +109,7 @@ export const Chat = () => {
             className={classes.textarea}
             resize="vertical"
             size="large"
-            placeholder="Start chatting"
+            placeholder="Ask a question..."
             name="prompt"
             id="prompt"
             disabled={submitting}

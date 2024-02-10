@@ -1,9 +1,9 @@
-import { Title1 } from "@fluentui/react-components";
+import { Subtitle1, Title1 } from "@fluentui/react-components";
 
 export const Header = () => {
   return (
     <Title1>
-      Conference AI Assistant
+      🤖 Conference AI Assistant      
     </Title1>
-  );
+);
 };

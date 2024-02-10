@@ -21,7 +21,9 @@ import ReactMarkdown from "react-markdown";
 const useClasses = makeStyles({
   container: {},
   chatArea: {},
-  answersArea: {marginTop: "1em", boxShadow: "none"},
+  card: {},
+  rm: { marginBottom: "-1em", marginTop: "-1em"},
+  answersArea: { marginTop: "1em"},
   textarea: { width: "100%", marginBottom: "1rem" },
 });
 
@@ -41,24 +43,25 @@ const Answers = ({ data }: { data: Awaited<ReturnType<typeof action>> }) => {
     return null;
   }
   const components = [];
+  const classes = useClasses();
   
   var cid:number = 0
   for (const id in data) { cid = Number(id) }
   const [question, answer] = data[cid];    
       
   components.push(
-    <Card key={cid}>        
+    <Card key={cid} className={classes.card}>        
       <Title2 as="h2" block={true} style={{ marginBottom: "0em", marginTop:"0px" }}>Your question</Title2>
       <FancyText>
         {question.question}
       </FancyText>
       <Title2 as="h2" block={true} style={{ marginBottom: "0em" }}>My answer</Title2>
       <FancyText>
-        <ReactMarkdown>{answer.answer}</ReactMarkdown>
+        <ReactMarkdown className={classes.rm}>{answer?.answer}</ReactMarkdown>
       </FancyText>
       <Title2 as="h2" block={true} style={{ marginBottom: "0em" }}>My thoughts</Title2>
       <FancyText>
-        {answer.thoughts}
+        {answer?.thoughts}
       </FancyText>
     </Card>
   );

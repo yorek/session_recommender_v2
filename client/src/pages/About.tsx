@@ -10,17 +10,16 @@ function showSessionCount(
   var sc = sessionsCount;
   if (sc === undefined) {
     sc = ls.get("sessionsCount");
+    console.log("sessionsCount", sc);
   } else {
     ls.set("sessionsCount", sc, { ttl: 60 * 60 * 24 * 7 });
   }
-  if (sc === undefined) {
+  if (sc == null) {
     return <FancyText>Loading session count...</FancyText>;
   }
   return (
     <FancyText>
-      There are{" "}
-      <a href="https://www.dotnetconf.net/agenda">{sc} sessions indexed</a> so
-      far.
+      There are <a href="https://www.dotnetconf.net/agenda">{sc} sessions indexed</a> so far.
     </FancyText>
   );
 }
@@ -38,7 +37,7 @@ export const About = () => {
   return (
     <>
       <FancyText>
-        Source code and and related articles are <a href="https://github.com/Azure-Samples/azure-sql-db-session-recommender">available on GitHub.</a>
+        Source code and and related articles are <a href="https://github.com/Azure-Samples/azure-sql-db-session-recommender">available on GitHub.</a>{" "}
         The AI model used generate embeddings is the `text-embedding-ada-002` and the AI model use to process and generate natural language content is `gpt-4 turbo`.
       </FancyText>
       <Suspense fallback={showSessionCount()}>

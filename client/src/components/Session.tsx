@@ -14,7 +14,7 @@ export const Session = ({ session }: { session: SessionInfo }) => {
       <Text className="session-similarity" weight="bold" size={400}>
         {formatSubtitle(session)}
       </Text>
-      <FancyText weight="semibold" size={500} className="abstract">
+      <FancyText weight="semibold" size={500} className="abstract" style={{ marginTop: "3px"}}>
         {session.abstract}
       </FancyText>
     </div>

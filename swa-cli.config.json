@@ -3,12 +3,11 @@
   "configurations": {
     "client": {
       "appLocation": "client",
+      "apiLocation": "api",
+      "dataApiLocation": "swa-db-connections",
       "outputLocation": "dist",
       "appBuildCommand": "npm run build",
-      "run": "npm run dev",
-      "appDevserverUrl": "http://localhost:5173",
-      "dataApiLocation": "swa-db-connections",
-      "apiDevserverUrl": "http://localhost:7071"
+      "run": "npm run dev"
     }
   }
 }

@@ -13,6 +13,9 @@ using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
 using Dapper;
 using Azure.AI.OpenAI;
+using System.ComponentModel.DataAnnotations;
+using Azure;
+using Azure.Identity;
 
 namespace SessionRecommender
 {
@@ -42,21 +45,30 @@ Sessions will be provided in an assistant message in the format of `title|abstra
 """;
 
         private readonly OpenAIClient openAIClient;
-        private readonly SqlConnection conn;
 
-        public ChatHandler(OpenAIClient openAIClient, SqlConnection conn)
+        public ChatHandler()
         {
+            Uri openaiEndPoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") is string value &&
+                Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) &&
+                uri is not null
+                ? uri
+                : throw new ArgumentException(
+                $"Unable to parse endpoint URI");
+
+            OpenAIClient openAIClient = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY") is string key ?
+                new(openaiEndPoint, new AzureKeyCredential(key)) :
+                new(openaiEndPoint, new DefaultAzureCredential());
+
             this.openAIClient = openAIClient;
-            this.conn = conn;
         }
 
         [FunctionName("ChatHandler")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "ask")] HttpRequest req,            
+        public async IAsyncEnumerable<string> Run(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "ask")] HttpRequest req,
             ILogger logger)
         {
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();            
-            ChatTurn[] history = JsonConvert.DeserializeObject<ChatTurn[]>(requestBody);
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            ChatTurn[] history = JsonConvert.DeserializeObject<ChatTurn[]>(requestBody ?? "[]");
 
             logger.LogInformation("Retrieving similar sessions...");
 
@@ -65,8 +77,10 @@ Sessions will be provided in an assistant message in the format of `title|abstra
             p.Add("@top", 25);
             p.Add("@min_similarity", 0.70);
 
-            using IDataReader foundSessions = await conn.ExecuteReaderAsync("[web].[find_sessions]", commandType: CommandType.StoredProcedure, param: p);
+            Console.WriteLine("Executing query...");
 
+            using SqlConnection conn = new SqlConnection(Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTION_STRING"));
+            using IDataReader foundSessions = await conn.ExecuteReaderAsync("[web].[find_sessions]", commandType: CommandType.StoredProcedure, param: p);
             List<FoundSession> sessions = [];
             while (foundSessions.Read())
             {
@@ -108,10 +122,22 @@ In the second section, that must be named exactly '###thoughts###' (and make sur
 
             ChatCompletionsOptions options = new(_openAIDeploymentName, messages);
 
-            try
+            var answerContent = "";
+            await foreach (StreamingChatCompletionsUpdate chatUpdate in openAIClient.GetChatCompletionsStreaming(options))
             {
-                var answerPayload = await openAIClient.GetChatCompletionsAsync(options);
-                var answerContent = answerPayload.Value.Choices[0].Message.Content;
+                if (chatUpdate.Role.HasValue)
+                {
+                    Console.Write($"{chatUpdate.Role.Value.ToString().ToUpperInvariant()}: ");
+                    answerContent += chatUpdate.ContentUpdate;
+                }
+                if (!string.IsNullOrEmpty(chatUpdate.ContentUpdate))
+                {
+                    Console.Write(chatUpdate.ContentUpdate);
+                    answerContent += chatUpdate.ContentUpdate;
+                }
+
+                //var answerPayload = await openAIClient.GetChatCompletionsAsync(options);
+                //var answerContent = answerPayload.Value.Choices[0].Message.Content;
 
                 //logger.LogInformation(answerContent);            
 
@@ -119,23 +145,26 @@ In the second section, that must be named exactly '###thoughts###' (and make sur
                     .Replace("###Thoughts###", "###thoughts###", StringComparison.InvariantCultureIgnoreCase)
                     .Replace("### Thoughts ###", "###thoughts###", StringComparison.InvariantCultureIgnoreCase)
                     .Split("###thoughts###", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                var answer = answerPieces[0];
-                var thoughts = answerPieces.Length == 2 ? answerPieces[1] : "No thoughts provided.";
-
-                logger.LogInformation("Done.");
-
-                return new OkObjectResult(new
+                if (answerPieces.Length > 0)
                 {
-                    answer,
-                    thoughts,
-                    dataPoints = sessions.Select(s => new { title = s.Title, content = s.Abstract, url = "", similarity = s.Similarity }),
-                });
+                    var answer = answerPieces[0];
+                    var thoughts = answerPieces.Length == 2 ? answerPieces[1] : "No thoughts provided.";
+
+                    Console.WriteLine("Answer: " + answer);
+                    yield return answer;
+                } else {
+                    yield return answerContent;
+                }
             }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Failed to get answer from OpenAI.");
-                return new BadRequestObjectResult(e.Message);
-            }
+
+            logger.LogInformation("Done.");
+
+            // return new OkObjectResult(new
+            // {
+            //     answer,
+            //     thoughts,
+            //     dataPoints = sessions.Select(s => new { title = s.Title, content = s.Abstract, url = "", similarity = s.Similarity }),
+            // });                    
         }
     }
 }

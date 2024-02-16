@@ -1,7 +1,5 @@
 import { Input, Spinner } from "@fluentui/react-components";
 import { Search24Regular } from "@fluentui/react-icons";
-import { SendRegular } from "@fluentui/react-icons";
-import dayjs from "dayjs";
 import {
   Form,
   LoaderFunction,
@@ -102,15 +100,3 @@ export default function SessionSearch() {
   );
 }
 
-export function formatSubtitle(session: SessionInfo) {
-  var speakers = JSON.parse(session.speakers).join(", ");
-
-  // var startTime = dayjs(session.start_time_PST);
-  // var endTime = dayjs(session.end_time_PST);
-
-  // var day = startTime.date();
-  // var start = startTime.format("hh:mm A");
-  // var end = endTime.format("hh:mm A");
-
-  return `${speakers} | Similarity: ${session.cosine_similarity.toFixed(6)}`;
-}

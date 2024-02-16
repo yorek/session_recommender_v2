@@ -22,9 +22,9 @@ public record FoundSession(
     double Similarity, 
     //string RecordingUrl, 
     string Speakers,
-    string ExternalId
-    //DateTimeOffset Start, 
-    //DateTimeOffset End
+    string ExternalId,
+    DateTimeOffset Start, 
+    DateTimeOffset End
 );
 
 public class ChatHandler(OpenAIClient openAIClient, SqlConnection conn, ILogger<ChatHandler> logger)
@@ -34,7 +34,7 @@ public class ChatHandler(OpenAIClient openAIClient, SqlConnection conn, ILogger<
     private const string SystemMessage = """
 You are a system assistant who helps users find the right session to watch from the conference, based off the sessions that are provided to you.
 
-Sessions will be provided in an assistant message in the format of `title|abstract|speakers`. You can use this information to help you answer the user's question.
+Sessions will be provided in an assistant message in the format of `title|abstract|speakers|start-time|end-time`. You can use this information to help you answer the user's question.
 """;
 
     [Function("ChatHandler")]
@@ -59,8 +59,8 @@ Sessions will be provided in an assistant message in the format of `title|abstra
                 Title: foundSessions.GetString(1),
                 Abstract: foundSessions.GetString(2),
                 ExternalId: foundSessions.GetString(3),
-                //Start: foundSessions.GetDateTime(4),
-                //End: foundSessions.GetDateTime(5),
+                Start: foundSessions.GetDateTime(4),
+                End: foundSessions.GetDateTime(5),
                 //RecordingUrl: foundSessions.GetString(6),
                 Speakers: foundSessions.GetString(7),
                 Similarity: foundSessions.GetDouble(8)
@@ -69,7 +69,7 @@ Sessions will be provided in an assistant message in the format of `title|abstra
 
         logger.LogInformation("Calling GPT...");
 
-        string sessionDescriptions = string.Join("\r", sessions.Select(s => $"{s.Title}|{s.Abstract}|{s.Speakers}"));
+        string sessionDescriptions = string.Join("\r", sessions.Select(s => $"{s.Title}|{s.Abstract}|{s.Speakers}|{s.Start}|{s.End}"));
 
         List<ChatRequestMessage> messages = [new ChatRequestSystemMessage(SystemMessage)];
 
@@ -87,7 +87,7 @@ Sessions will be provided in an assistant message in the format of `title|abstra
 ## End ##
 
 You answer needs to divided in two sections: in the first section you'll add the answer to the question.
-In the second section, that must be named exactly '###thoughts###' (and make sure to use the section name as typed, without any changes) you'll write brief thoughts on how you came up with the answer, e.g. what sources you used, what you thought about, etc.
+In the second section, that must be named exactly '###thoughts###', and you must use the section name as typed, without any changes, you'll write brief thoughts on how you came up with the answer, e.g. what sources you used, what you thought about, etc.
 }}"));
 
         ChatCompletionsOptions options = new(_openAIDeploymentName, messages);
@@ -111,8 +111,7 @@ In the second section, that must be named exactly '###thoughts###' (and make sur
             return new OkObjectResult(new
             {
                 answer,
-                thoughts,
-                dataPoints = sessions.Select(s => new { title = s.Title, content = s.Abstract, url = "", similarity = s.Similarity }),
+                thoughts                
             });
         }
         catch (Exception e)

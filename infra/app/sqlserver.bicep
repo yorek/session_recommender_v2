@@ -64,7 +64,7 @@ resource createTableScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = 
   location: location
   kind: 'AzureCLI'
   properties: {
-    azCliVersion: '2.57.0'
+    azCliVersion: '2.54.0'
     retentionInterval: 'PT1H' // Retain the script resource for 1 hour after it ends running
     timeout: 'PT5M' // Five minutes
     cleanupPreference: 'OnSuccess'

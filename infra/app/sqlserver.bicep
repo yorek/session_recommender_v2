@@ -49,7 +49,7 @@ resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   }
 
   resource symbolicname 'administrators@2022-05-01-preview' = {
-    name: 'Active Directory'
+    name: 'ActiveDirectory'
     properties: {
       administratorType: 'ActiveDirectory'
       login: 'EntraAdmin'

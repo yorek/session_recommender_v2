@@ -1,5 +1,7 @@
-Invoke-WebRequest -Uri https://aka.ms/sqlpackage-windows -OutFile sqlpackage.zip
+Invoke-WebRequest -Uri https://aka.ms/sqlpackage-linux -OutFile sqlpackage.zip
 
-Expand-Archive .\sqlpackage.zip sqlpackage\
+Expand-Archive ./sqlpackage.zip sqlpackage/
 
-.\sqlpackage\sqlpackage.exe /version
+chmod a+x ./sqlpackage/sqlpackage
+
+./sqlpackage/sqlpackage /version

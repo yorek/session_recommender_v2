@@ -38,10 +38,7 @@
     <PreDeploy Include="Script.PreDeployment.sql" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="dmmssqlsrv9.publish.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Build Remove="SQLQuery_3.sql" />
+    <PostDeploy Include="Script.PostDeployment.sql" />
   </ItemGroup>
   <Target Name="BeforeBuild">
     <Delete Files="$(BaseIntermediateOutputPath)\project.assets.json" />

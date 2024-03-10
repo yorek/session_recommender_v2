@@ -16,6 +16,5 @@ CREATE TABLE [web].[sessions] (
 );
 GO
 
-ALTER TABLE [web].[sessions] ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = OFF);
-GO
+
 

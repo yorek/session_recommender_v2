@@ -1,6 +1,6 @@
 # Session Recommender V2
 
-TDB
+Coming soon...
 
 ## Fluent UI
 

@@ -10,7 +10,3 @@ CREATE TABLE [web].[speakers] (
     CHECK (isjson([embeddings])=(1))
 );
 GO
-
-GO
-ALTER TABLE [web].[speakers] ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = OFF);
-GO

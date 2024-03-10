@@ -2,19 +2,23 @@ metadata description = 'Creates an Azure SQL Server instance.'
 param name string
 param location string = resourceGroup().location
 param tags object = {}
-param appUser string = 'appUser'
 param databaseName string
-param sqlAdmin string = 'sqlAdmin'
+param principalId string
 param connectionStringKey string = 'AZURE-SQL-CONNECTION-STRING'
+
+param sqlAdmin string = 'sqlAdmin'
 @secure()
 param sqlAdminPassword string
+
+param appUser string = 'session_recommender_app'
 @secure()
 param appUserPassword string
+
 @secure()
 param openAIEndpoint string
-param openAIDeploymentName string = 'embeddings'
+param openAIDeploymentName string
 param openAIServiceName string
-param principalId string
+
 
 resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   name: name
@@ -106,6 +110,63 @@ SCRIPT_END
 
 ./sqlcmd -S ${DBSERVER} -d ${DBNAME} -U ${SQLADMIN} -i ./initDb.sql
     '''
+  }
+}
+
+resource createTableScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+  name: '${name}-creatTable-script'
+  location: location
+  kind: 'AzureCLI'
+  properties: {
+    azCliVersion: '2.37.0'
+    retentionInterval: 'PT1H' // Retain the script resource for 1 hour after it ends running
+    timeout: 'PT5M' // Five minutes
+    cleanupPreference: 'OnSuccess'
+    environmentVariables: [
+      {
+        name: 'APPUSERNAME'
+        value: appUser
+      }
+      {
+        name: 'APPUSERPASSWORD'
+        secureValue: appUserPassword
+      }
+      {
+        name: 'DBNAME'
+        value: databaseName
+      }
+      {
+        name: 'DBSERVER'
+        value: sqlServer.properties.fullyQualifiedDomainName
+      }
+      {
+        name: 'SQLCMDPASSWORD'
+        secureValue: sqlAdminPassword
+      }
+      {
+        name: 'SQLADMIN'
+        value: sqlAdmin
+      }
+      {
+        name: 'OpenAIUrl'
+        value: openAIEndpoint
+      }
+      {
+        name: 'OpenAIDeploymentName'
+        value: openAIDeploymentName
+      }
+      {
+        name: 'OpenAIKey'
+        value: listKeys(resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.CognitiveServices/accounts', openAIServiceName), '2023-05-01').key1
+      }
+
+    ]
+    scriptContent: '''
+      ./setup-database.sh
+    '''
+    supportingScriptUris: [
+      'https://raw.githubusercontent.com/yorek/session_recommender_v2/main/database/setup-database.sh'
+    ]
   }
 }
 

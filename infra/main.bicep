@@ -4,32 +4,47 @@ targetScope = 'subscription'
 @maxLength(64)
 @description('Name of the the environment which is used to generate a short unique hash used in all resources.')
 param environmentName string
+
 @minLength(1)
 @description('Primary location for all resources')
 param location string
-param openAIServiceName string = ''
+
+// Identity
+@description('Id of the user or app to assign application roles')
+param principalId string
+
+// OpenAI
+param openAIServiceName string 
 param openAISkuName string = 'S0'
 param embeddingDeploymentName string = 'embeddings'
 param gptDeploymentName string = 'gpt'
-@description('Id of the user or app to assign application roles')
-param principalId string
-@secure()
-@description('Application user password')
-param appUserPassword string
+
+// Azure SQL
 @secure()
 @description('SQL Server administrator password')
 param sqlAdminPassword string
-param dbServiceName string = ''
-param keyVaultName string = ''
+@secure()
+@description('Application user password')
+param appUserPassword string
+param dbServiceName string 
 param dbName string = 'session_recommender_v2'
-param storageAccountName string = ''
-param functionAppName string = ''
-param applicationInsightsName string = ''
-param hostingPlanName string = ''
-param staticWebAppName string = ''
-param logAnalyticsName string = ''
+
+param keyVaultName string 
+
+param storageAccountName string 
+
+param functionAppName string 
+
+param hostingPlanName string 
+param staticWebAppName string 
+
+param applicationInsightsName string 
+
+param logAnalyticsName string 
+
 @description('Flag to Use keyvault to store and use keys')
 param useKeyVault bool = true
+
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var tags = { 'azd-env-name': environmentName }
@@ -57,7 +72,8 @@ module openAI 'app/openai.bicep' = {
         name: embeddingDeploymentName
         model: {
           format: 'OpenAI'
-          name: 'text-embedding-ada-002'         
+          name: 'text-embedding-ada-002'
+          version: '2'
         }
         capacity: 30
       }
@@ -164,8 +180,7 @@ module functionApp 'app/functions.bicep' = {
     hostingPlanId: hostingPlan.outputs.id
     sqlConnectionString: '${database.outputs.connectionString}; Password=${appUserPassword}'
     openAIEndpoint: openAI.outputs.endpoint
-    openAIEmebddingDeploymentName: embeddingDeploymentName
-    openAIGPTDeploymentName: gptDeploymentName
+    openAIDeploymentName: embeddingDeploymentName
     keyVaultName: keyVault.outputs.name
     applicationInsightsConnectionString: applicationInsights.outputs.connectionString
     useKeyVault: useKeyVault

@@ -1,8 +1,8 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
-name: azure-sql-db-session-recommender
+name: azure-sql-db-session-recommender-v2
 metadata:
-  template: azure-sql-db-session-recommender
+  template: azure-sql-db-session-recommender-v2
 services:
   web:
     project: ./client
@@ -10,6 +10,6 @@ services:
     host: staticwebapp
     dist: dist
   functionapp:
-    project: ./func
+    project: ./function
     language: dotnet
     host: function

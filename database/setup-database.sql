@@ -11,30 +11,8 @@ SET ANSI_NULLS, ANSI_PADDING, ANSI_WARNINGS, ARITHABORT, CONCAT_NULL_YIELDS_NULL
 
 SET NUMERIC_ROUNDABORT OFF;
 
-
-GO
-:setvar APP_USER_PASSWORD ""
-:setvar OPEN_AI_DEPLOYMENT ""
-:setvar OPEN_AI_ENDPOINT ""
-:setvar OPEN_AI_KEY ""
-:setvar DatabaseName ""
-
 GO
 :on error exit
-GO
-/*
-Detect SQLCMD mode and disable script execution if SQLCMD mode is not supported.
-To re-enable the script after enabling SQLCMD mode, execute the following:
-SET NOEXEC OFF; 
-*/
-:setvar __IsSqlCmdEnabled "True"
-GO
-IF N'$(__IsSqlCmdEnabled)' NOT LIKE N'True'
-    BEGIN
-        PRINT N'SQLCMD mode must be enabled to successfully execute this script.';
-        SET NOEXEC ON;
-    END
-
 
 GO
 IF EXISTS (SELECT 1

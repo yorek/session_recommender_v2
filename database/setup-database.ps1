@@ -8,7 +8,6 @@ chmod a+x ./sqlpackage/sqlpackage
 
 Invoke-WebRequest -Uri https://github.com/yorek/session_recommender_v2/raw/main/database/session_recommender_v2.dacpac -OutFile session_recommender_v2.dacpac
 
-Write-Host "Deploying database to $DBSERVER with name $DBNAME"
 Write-Host "Deploying database to $Env:DBSERVER with name $Env:DBNAME"
 
-./sqlpackage/sqlpackage /Action:Publish /SourceFile:"session_recommender_v2.dacpac" /TargetDatabaseName:"$DBNAME" /TargetServerName:"$DBSERVER" /TargetUser:"$SQLADMIN" /TargetPassword:"$SQLCMDPASSWORD"
+./sqlpackage/sqlpackage /Action:Publish /SourceFile:"session_recommender_v2.dacpac" /TargetDatabaseName:"$Env:DBNAME" /TargetServerName:"$Env:DBSERVER" /TargetUser:"$Env:SQLADMIN" /TargetPassword:"$Env:SQLCMDPASSWORD"

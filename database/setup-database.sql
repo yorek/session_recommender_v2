@@ -13,14 +13,11 @@ SET NUMERIC_ROUNDABORT OFF;
 
 
 GO
-:setvar APP_USER_PASSWORD "APP_USER_PASSWORD"
-:setvar OPEN_AI_DEPLOYMENT "embeddings"
-:setvar OPEN_AI_ENDPOINT "https://dm-open-ai-3.openai.azure.com/"
+:setvar APP_USER_PASSWORD ""
+:setvar OPEN_AI_DEPLOYMENT ""
+:setvar OPEN_AI_ENDPOINT ""
 :setvar OPEN_AI_KEY ""
-:setvar DatabaseName "session_recommender_v2"
-:setvar DefaultFilePrefix "session_recommender_v2"
-:setvar DefaultDataPath ""
-:setvar DefaultLogPath ""
+:setvar DatabaseName ""
 
 GO
 :on error exit

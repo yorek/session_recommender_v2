@@ -49,7 +49,7 @@ resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   }
 
   resource symbolicname 'administrators@2022-05-01-preview' = {
-    name: 'ActiveDirectory'
+    name: 'Active Directory'
     properties: {
       administratorType: 'ActiveDirectory'
       login: 'EntraAdmin'
@@ -59,62 +59,8 @@ resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   }
 }
 
-resource sqlDeploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-  name: '${name}-deployment-script'
-  location: location
-  kind: 'AzureCLI'
-  properties: {
-    azCliVersion: '2.37.0'
-    retentionInterval: 'PT1H' // Retain the script resource for 1 hour after it ends running
-    timeout: 'PT5M' // Five minutes
-    cleanupPreference: 'OnSuccess'
-    environmentVariables: [
-      {
-        name: 'APPUSERNAME'
-        value: appUser
-      }
-      {
-        name: 'APPUSERPASSWORD'
-        secureValue: appUserPassword
-      }
-      {
-        name: 'DBNAME'
-        value: databaseName
-      }
-      {
-        name: 'DBSERVER'
-        value: sqlServer.properties.fullyQualifiedDomainName
-      }
-      {
-        name: 'SQLCMDPASSWORD'
-        secureValue: sqlAdminPassword
-      }
-      {
-        name: 'SQLADMIN'
-        value: sqlAdmin
-      }
-    ]
-
-    scriptContent: '''
-wget https://github.com/microsoft/go-sqlcmd/releases/download/v0.8.1/sqlcmd-v0.8.1-linux-x64.tar.bz2
-tar x -f sqlcmd-v0.8.1-linux-x64.tar.bz2 -C .
-
-cat <<SCRIPT_END > ./initDb.sql
-drop user ${APPUSERNAME}
-go
-create user ${APPUSERNAME} with password = '${APPUSERPASSWORD}'
-go
-alter role db_owner add member ${APPUSERNAME}
-go
-SCRIPT_END
-
-./sqlcmd -S ${DBSERVER} -d ${DBNAME} -U ${SQLADMIN} -i ./initDb.sql
-    '''
-  }
-}
-
 resource createTableScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-  name: '${name}-creatTable-script'
+  name: 'Create Database Script'
   location: location
   kind: 'AzureCLI'
   properties: {
@@ -122,17 +68,9 @@ resource createTableScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = 
     retentionInterval: 'PT1H' // Retain the script resource for 1 hour after it ends running
     timeout: 'PT5M' // Five minutes
     cleanupPreference: 'OnSuccess'
-    environmentVariables: [
+    environmentVariables: [           
       {
-        name: 'APPUSERNAME'
-        value: appUser
-      }
-      {
-        name: 'APPUSERPASSWORD'
-        secureValue: appUserPassword
-      }
-      {
-        name: 'DBNAME'
+        name: 'DatabaseName'
         value: databaseName
       }
       {
@@ -148,18 +86,21 @@ resource createTableScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = 
         value: sqlAdmin
       }
       {
-        name: 'OpenAIUrl'
+        name: 'OPEN_AI_ENDPOINT'
         value: openAIEndpoint
       }
       {
-        name: 'OpenAIDeploymentName'
+        name: 'OPEN_AI_DEPLOYMENT'
         value: openAIDeploymentName
       }
       {
-        name: 'OpenAIKey'
+        name: 'OPEN_AI_KEY'
         value: listKeys(resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.CognitiveServices/accounts', openAIServiceName), '2023-05-01').key1
       }
-
+      {
+        name: 'APP_USER_PASSWORD'
+        secureValue: appUserPassword
+      }
     ]
     scriptContent: '''
       ./setup-database.sh

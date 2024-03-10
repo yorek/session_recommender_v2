@@ -70,7 +70,7 @@ resource createTableScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = 
     cleanupPreference: 'OnSuccess'
     environmentVariables: [           
       {
-        name: 'DatabaseName'
+        name: 'DBNAME'
         value: databaseName
       }
       {

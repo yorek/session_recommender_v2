@@ -1,3 +1,8 @@
+ALTER DATABASE [$(DBNAME)]
+            SET CHANGE_TRACKING = ON(AUTO_CLEANUP = ON, CHANGE_RETENTION = 2 DAYS) 
+            WITH ROLLBACK IMMEDIATE;
+GO
+
 if not exists(select * from sys.symmetric_keys where [name] = '##MS_DatabaseMasterKey##')
 begin
     create master key encryption by password = N'V3RYStr0NGP@ssw0rd!';

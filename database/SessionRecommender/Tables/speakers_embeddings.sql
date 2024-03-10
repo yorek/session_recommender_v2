@@ -2,7 +2,7 @@ CREATE TABLE [web].[speakers_embeddings] (
     [id]      INT              NOT NULL,
     [vector_value_id] INT              NOT NULL,
     [vector_value]    DECIMAL (19, 16) NOT NULL,
-    FOREIGN KEY ([id]) REFERENCES [web].[speakers] ([id])
+    CONSTRAINT fk__speakers_embeddings__speakers FOREIGN KEY ([id]) REFERENCES [web].[speakers] ([id])
 );
 GO
 

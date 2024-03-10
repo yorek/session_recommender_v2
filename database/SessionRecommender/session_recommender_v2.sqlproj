@@ -43,4 +43,8 @@
   <Target Name="BeforeBuild">
     <Delete Files="$(BaseIntermediateOutputPath)\project.assets.json" />
   </Target>
+  <Target Name="AfterBuild">
+    <Message Text="Copying dacpacs..." Importance="high"/>
+    <Copy SourceFiles="$(OutputPath)\*.dacpac" DestinationFolder="$(OutputPath)\..\..\.."/>
+  </Target>
 </Project>

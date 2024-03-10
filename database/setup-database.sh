@@ -1,7 +1,5 @@
  #!/bin/sh
 
-sudo apt-get install libunwind8
-
 wget https://aka.ms/sqlpackage-linux
 
 unzip sqlpackage-linux -d ./sqlpackage

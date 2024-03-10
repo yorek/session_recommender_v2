@@ -154,12 +154,7 @@ resource createDBScript2 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
         secureValue: appUserPassword
       }
     ]
-    scriptContent: '''
-      ./setup-database.ps1
-    '''
-    supportingScriptUris: [
-      'https://raw.githubusercontent.com/yorek/session_recommender_v2/main/database/setup-database.ps1'
-    ]
+    scriptContent: loadTextContent('../../database/setup-database.ps1')  
   }
 }
 

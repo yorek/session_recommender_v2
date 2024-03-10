@@ -116,7 +116,7 @@ resource createDBScript2 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   location: location
   kind: 'AzurePowerShell'
   properties: {
-    azPowerShellVersion: '2.37.0'
+    azPowerShellVersion: '7.4'
     retentionInterval: 'PT1H' // Retain the script resource for 1 hour after it ends running
     timeout: 'PT5M' // Five minutes
     cleanupPreference: 'OnSuccess'

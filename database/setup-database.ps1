@@ -7,6 +7,7 @@ chmod a+x ./sqlpackage/sqlpackage
 ./sqlpackage/sqlpackage /version
 
 Invoke-WebRequest -Uri https://github.com/yorek/session_recommender_v2/raw/main/database/session_recommender_v2.dacpac -OutFile session_recommender_v2.dacpac
+Invoke-WebRequest -Uri https://github.com/yorek/session_recommender_v2/raw/main/database/master.dacpac -OutFile master.dacpac
 
 Write-Host "Deploying database to $Env:DBSERVER with name $Env:DBNAME"
 

@@ -59,12 +59,64 @@ resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   }
 }
 
-resource createTableScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+// resource createDBScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+//   name: '${name}-createDB-script'
+//   location: location
+//   kind: 'AzureCLI'
+//   properties: {
+//     azCliVersion: '2.37.0'
+//     retentionInterval: 'PT1H' // Retain the script resource for 1 hour after it ends running
+//     timeout: 'PT5M' // Five minutes
+//     cleanupPreference: 'OnSuccess'
+//     environmentVariables: [           
+//       {
+//         name: 'DBNAME'
+//         value: databaseName
+//       }
+//       {
+//         name: 'DBSERVER'
+//         value: sqlServer.properties.fullyQualifiedDomainName
+//       }
+//       {
+//         name: 'SQLCMDPASSWORD'
+//         secureValue: sqlAdminPassword
+//       }
+//       {
+//         name: 'SQLADMIN'
+//         value: sqlAdmin
+//       }
+//       {
+//         name: 'OPEN_AI_ENDPOINT'
+//         value: openAIEndpoint
+//       }
+//       {
+//         name: 'OPEN_AI_DEPLOYMENT'
+//         value: openAIDeploymentName
+//       }
+//       {
+//         name: 'OPEN_AI_KEY'
+//         value: listKeys(resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.CognitiveServices/accounts', openAIServiceName), '2023-05-01').key1
+//       }
+//       {
+//         name: 'APP_USER_PASSWORD'
+//         secureValue: appUserPassword
+//       }
+//     ]
+//     scriptContent: '''
+//       ./setup-database.sh
+//     '''
+//     supportingScriptUris: [
+//       'https://raw.githubusercontent.com/yorek/session_recommender_v2/main/database/setup-database.sh'
+//     ]
+//   }
+// }
+
+resource createDBScript2 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   name: '${name}-createDB-script'
   location: location
-  kind: 'AzureCLI'
+  kind: 'AzurePowerShell'
   properties: {
-    azCliVersion: '2.54.0'
+    azPowerShellVersion: '2.37.0'
     retentionInterval: 'PT1H' // Retain the script resource for 1 hour after it ends running
     timeout: 'PT5M' // Five minutes
     cleanupPreference: 'OnSuccess'
@@ -103,10 +155,10 @@ resource createTableScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = 
       }
     ]
     scriptContent: '''
-      ./setup-database.sh
+      ./setup-database.ps1
     '''
     supportingScriptUris: [
-      'https://raw.githubusercontent.com/yorek/session_recommender_v2/main/database/setup-database.sh'
+      'https://raw.githubusercontent.com/yorek/session_recommender_v2/main/database/setup-database.ps1'
     ]
   }
 }

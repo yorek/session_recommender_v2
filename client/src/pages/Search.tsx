@@ -1,6 +1,5 @@
 import { Input, Spinner } from "@fluentui/react-components";
 import { Search24Regular } from "@fluentui/react-icons";
-import dayjs from "dayjs";
 import {
   Form,
   LoaderFunction,
@@ -41,8 +40,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function SessionSearch() {
-  const { sessions, searchQuery, isSearch, errorInfo } =
-    useLoaderData() as LoaderData;
+  const { sessions, searchQuery, isSearch, errorInfo } = useLoaderData() as LoaderData;
   const navigation = useNavigation();
 
   const searching =
@@ -65,8 +63,7 @@ export default function SessionSearch() {
             <div>
               <Input
                 id={SEARCH_INPUT_ID}
-                size="large"
-                contentBefore={<Search24Regular />}
+                size="large"                
                 aria-label="Search sessions"
                 placeholder="Search"
                 type="search"
@@ -75,7 +72,10 @@ export default function SessionSearch() {
                 style={{ width: "100%", marginBottom: "1rem" }}
                 autoComplete="off"
               />
-              <PrimaryButton>Search</PrimaryButton>
+              <PrimaryButton
+              icon={<Search24Regular />}              
+            >Search</PrimaryButton>
+              
             </div>
             {searching && <Spinner label="Searching..." />}
             <div className="sr-only" aria-live="polite"></div>
@@ -100,15 +100,3 @@ export default function SessionSearch() {
   );
 }
 
-export function formatSubtitle(session: SessionInfo) {
-  var speakers = JSON.parse(session.speakers).join(", ");
-
-  // var startTime = dayjs(session.start_time_PST);
-  // var endTime = dayjs(session.end_time_PST);
-
-  // var day = startTime.date();
-  // var start = startTime.format("hh:mm A");
-  // var end = endTime.format("hh:mm A");
-
-  return `${speakers} | Similarity: ${session.cosine_similarity.toFixed(6)}`;
-}

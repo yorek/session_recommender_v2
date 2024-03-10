@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
 
-import Root from "./pages/Main";
+import Root from "./pages/Root";
 import SessionSearch, { loader as sessionsListLoader } from "./pages/Search";
 import { Chat, action as chatAction } from "./pages/Chat";
 import { About, loader as aboutLoader } from "./pages/About";

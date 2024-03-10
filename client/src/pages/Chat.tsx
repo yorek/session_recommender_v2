@@ -124,7 +124,7 @@ export const Chat = () => {
             icon={<SendRegular />}
             disabled={submitting || !prompt}
           >
-            Submit
+            Ask
           </PrimaryButton>
           {submitting && <Spinner label="Thinking..." />}
         </fetcher.Form>

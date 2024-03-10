@@ -3,6 +3,7 @@ import { Await, LoaderFunction, defer, useLoaderData } from "react-router-dom";
 import ls from "localstorage-slim";
 import { getSessionsCount } from "../api/sessions";
 import { FancyText } from "../components/FancyText";
+import siteConfig from "../site";
 
 function showSessionCount(
   sessionsCount: string | undefined | null = undefined
@@ -19,7 +20,7 @@ function showSessionCount(
   }
   return (
     <FancyText>
-      There are <a href="https://www.dotnetconf.net/agenda">{sc} sessions indexed</a> so far.
+      There are <a href={siteConfig.website}>{sc} sessions indexed</a> so far.
     </FancyText>
   );
 }
@@ -37,8 +38,8 @@ export const About = () => {
   return (
     <>
       <FancyText>
-        Source code and and related articles are <a href="https://github.com/Azure-Samples/azure-sql-db-session-recommender">available on GitHub.</a>{" "}
-        The AI model used generate embeddings is the `text-embedding-ada-002` and the AI model use to process and generate natural language content is `gpt-4 turbo`.
+        Source code and and related articles are <a href="https://github.com/Azure-Samples/azure-sql-db-session-recommender-v2">available on GitHub.</a>{" "}
+        The AI model used generate embeddings is the <i>text-embedding-ada-002</i> and the AI model used to process and generate natural language content is <i>gpt-4 turbo</i>.
       </FancyText>
       <Suspense fallback={showSessionCount()}>
         <Await

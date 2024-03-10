@@ -14,7 +14,7 @@ param location string
 param principalId string
 
 // OpenAI
-param openAIServiceName string 
+param openAIServiceName string = ''
 param openAISkuName string = 'S0'
 param embeddingDeploymentName string = 'embeddings'
 param gptDeploymentName string = 'gpt'
@@ -26,21 +26,21 @@ param sqlAdminPassword string
 @secure()
 @description('Application user password')
 param appUserPassword string
-param dbServiceName string 
+param dbServiceName string = ''
 param dbName string = 'session_recommender_v2'
 
-param keyVaultName string 
+param keyVaultName string = ''
 
-param storageAccountName string 
+param storageAccountName string = ''
 
-param functionAppName string 
+param functionAppName string = ''
 
-param hostingPlanName string 
-param staticWebAppName string 
+param hostingPlanName string = ''
+param staticWebAppName string = ''
 
-param applicationInsightsName string 
+param applicationInsightsName string = ''
 
-param logAnalyticsName string 
+param logAnalyticsName string = ''
 
 @description('Flag to Use keyvault to store and use keys')
 param useKeyVault bool = true

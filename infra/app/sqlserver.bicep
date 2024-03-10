@@ -60,7 +60,7 @@ resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
 }
 
 resource createTableScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-  name: 'Create Database Script'
+  name: '${name}-createDB-script'
   location: location
   kind: 'AzureCLI'
   properties: {

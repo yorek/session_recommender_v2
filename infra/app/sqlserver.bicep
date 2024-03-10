@@ -111,12 +111,12 @@ resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
 //   }
 // }
 
-resource createDBScript2 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+resource createDBScript2 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
   name: '${name}-createDB-script'
   location: location
   kind: 'AzurePowerShell'
   properties: {
-    azPowerShellVersion: '7.4'
+    azPowerShellVersion: '10.0'
     retentionInterval: 'PT1H' // Retain the script resource for 1 hour after it ends running
     timeout: 'PT5M' // Five minutes
     cleanupPreference: 'OnSuccess'
@@ -147,7 +147,7 @@ resource createDBScript2 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
       }
       {
         name: 'OPEN_AI_KEY'
-        value: listKeys(resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.CognitiveServices/accounts', openAIServiceName), '2023-05-01').key1
+        secureValue: listKeys(resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.CognitiveServices/accounts', openAIServiceName), '2023-05-01').key1
       }
       {
         name: 'APP_USER_PASSWORD'

@@ -179,8 +179,9 @@ module functionApp 'app/functions.bicep' = {
     functionAppName: !empty(functionAppName) ? functionAppName : '${abbrs.webSitesFunctions}${resourceToken}'
     hostingPlanId: hostingPlan.outputs.id
     sqlConnectionString: '${database.outputs.connectionString}; Password=${appUserPassword}'
+    openAIEmebddingDeploymentName: embeddingDeploymentName
+    openAIGPTDeploymentName: gptDeploymentName
     openAIEndpoint: openAI.outputs.endpoint
-    openAIDeploymentName: embeddingDeploymentName
     keyVaultName: keyVault.outputs.name
     applicationInsightsConnectionString: applicationInsights.outputs.connectionString
     useKeyVault: useKeyVault

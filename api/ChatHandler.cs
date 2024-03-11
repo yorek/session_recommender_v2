@@ -13,6 +13,8 @@ using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
 using Dapper;
 using Azure.AI.OpenAI;
+using Azure;
+using Azure.Identity;
 
 namespace SessionRecommender
 {
@@ -33,7 +35,7 @@ namespace SessionRecommender
         //DateTimeOffset End
         );
 
-        private readonly string _openAIDeploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_GPT_DEPLOYMENT_NAME") ?? "gpt-4";
+        private static readonly string _openAIDeploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_GPT_DEPLOYMENT_NAME") ?? "gpt-4";
 
         private const string SystemMessage = """
 You are a system assistant who helps users find the right session to watch from the conference, based off the sessions that are provided to you.
@@ -41,22 +43,29 @@ You are a system assistant who helps users find the right session to watch from 
 Sessions will be provided in an assistant message in the format of `title|abstract|speakers`. You can use this information to help you answer the user's question.
 """;
 
-        private readonly OpenAIClient openAIClient;
-        private readonly SqlConnection conn;
+        private static readonly OpenAIClient openAIClient;
 
-        public ChatHandler(OpenAIClient openAIClient, SqlConnection conn)
+        static ChatHandler()
         {
-            this.openAIClient = openAIClient;
-            this.conn = conn;
+            var openaiEndPoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") is string value &&
+                Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) &&
+                uri is not null
+                ? uri
+                : throw new ArgumentException(
+                $"Unable to parse endpoint URI");
+
+            openAIClient = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY") is string key ?
+                new(openaiEndPoint, new AzureKeyCredential(key)) :
+                new(openaiEndPoint, new DefaultAzureCredential());
         }
 
         [FunctionName("ChatHandler")]
-        public async Task<IActionResult> Run(
+        public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "ask")] HttpRequest req,            
             ILogger logger)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();            
-            ChatTurn[] history = JsonConvert.DeserializeObject<ChatTurn[]>(requestBody);
+            ChatTurn[] history = JsonConvert.DeserializeObject<ChatTurn[]>(requestBody) ?? [];
 
             logger.LogInformation("Retrieving similar sessions...");
 
@@ -64,6 +73,8 @@ Sessions will be provided in an assistant message in the format of `title|abstra
             p.Add("@text", history.Last().userPrompt);
             p.Add("@top", 25);
             p.Add("@min_similarity", 0.70);
+
+            using var conn = new SqlConnection(Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTION_STRING"));
 
             using IDataReader foundSessions = await conn.ExecuteReaderAsync("[web].[find_sessions]", commandType: CommandType.StoredProcedure, param: p);
 

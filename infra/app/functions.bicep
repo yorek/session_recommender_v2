@@ -43,6 +43,7 @@ module functionApp '../core/host/functions.bicep' = {
   }
 }
 
+output functionAppResourceId string = functionApp.outputs.functionAppResourceId
 output name string = functionApp.outputs.name
 output uri string = functionApp.outputs.uri
 output identityPrincipalId string = functionApp.outputs.identityPrincipalId

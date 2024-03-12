@@ -8,7 +8,7 @@ using Azure.AI.OpenAI;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SessionRecommender;
+namespace SessionRecommender.RequestHandler;
 
 public class Item 
 {

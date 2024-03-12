@@ -10,6 +10,6 @@ services:
     host: staticwebapp
     dist: dist
   functionapp:
-    project: ./function
+    project: ./func
     language: dotnet
     host: function

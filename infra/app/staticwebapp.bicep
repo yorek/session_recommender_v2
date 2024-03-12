@@ -3,13 +3,14 @@ param name string
 param location string = resourceGroup().location
 param tags object = {}
 param sku object = {
-  name: 'Free'
-  tier: 'Free'
+  name: 'Standard'
+  tier: 'Standard'
 }
 param sqlServerLocation string
 param sqlServerId string
 @secure()
 param sqlConnectionString string
+param apiResourceId string
 
 resource web 'Microsoft.Web/staticSites@2022-09-01' = {
   name: name
@@ -17,12 +18,19 @@ resource web 'Microsoft.Web/staticSites@2022-09-01' = {
   tags: tags
   properties: {}
   sku: sku
-  resource symbolicname 'databaseConnections@2022-09-01' = {
+  resource apifunc 'linkedBackends@2022-09-01' = {
+    name: 'default'
+    properties: {
+      backendResourceId: apiResourceId
+      region: location
+    }
+  }
+  resource dbconn 'databaseConnections@2022-09-01' = {
     name: 'default'
     properties: {
       connectionString: sqlConnectionString
       region: sqlServerLocation
-      resourceId: sqlServerId
+      resourceId: sqlServerId      
     }
   }
 }

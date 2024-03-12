@@ -120,19 +120,6 @@ module keyVault 'core/security/keyvault.bicep' = {
   }
 }
 
-module web 'app/staticwebapp.bicep' = {
-  name: 'web'
-  scope: rg
-  params: {
-    name: !empty(staticWebAppName) ? staticWebAppName : '${abbrs.webStaticSites}${resourceToken}'
-    location: location
-    tags: union(tags, { 'azd-service-name': 'web' })
-    sqlConnectionString: '${database.outputs.connectionString}; Password=${appUserPassword}'
-    sqlServerId: database.outputs.id
-    sqlServerLocation: location
-  }
-}
-
 module hostingPlan 'core/host/appserviceplan.bicep' = {
   name: 'hostingPlan'
   scope: rg
@@ -209,8 +196,23 @@ module funcaccess './core/security/keyvault-access.bicep' = if (useKeyVault) {
   }
 }
 
+module web 'app/staticwebapp.bicep' = {
+  name: 'web'
+  scope: rg
+  params: {
+    name: !empty(staticWebAppName) ? staticWebAppName : '${abbrs.webStaticSites}${resourceToken}'
+    location: location
+    tags: union(tags, { 'azd-service-name': 'web' })
+    sqlConnectionString: '${database.outputs.connectionString}; Password=${appUserPassword}'
+    sqlServerId: database.outputs.id
+    sqlServerLocation: location
+    apiResourceId: functionApp.outputs.functionAppResourceId
+  }
+}
+
 output AZURE_SQL_SQLSERVICE_CONNECTION_STRING_KEY string = database.outputs.connectionStringKey
 output AZURE_FUNCTIONAPP_NAME string = functionApp.outputs.name
+output AZURE_FUNCTIONAPP_ID string = functionApp.outputs.functionAppResourceId
 output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.endpoint
 output AZURE_KEY_VALUT_NAME string = keyVault.outputs.name
 output AZURE_LOCATION string = location

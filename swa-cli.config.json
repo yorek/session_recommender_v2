@@ -3,8 +3,6 @@
   "configurations": {
     "client": {
       "appLocation": "client",
-      "apiLocation": "api",
-      "dataApiLocation": "swa-db-connections",
       "outputLocation": "dist",
       "appBuildCommand": "npm run build",
       "run": "npm run dev"
